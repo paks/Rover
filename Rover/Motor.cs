@@ -1,4 +1,7 @@
-﻿using Windows.Devices.Gpio;
+﻿using Microsoft.IoT.Lightning.Providers;
+using Windows.Devices.Gpio;
+using Windows.Devices.Pwm;
+using Windows.Devices;
 
 namespace Rover
 {
@@ -6,6 +9,17 @@ namespace Rover
     {
         private readonly GpioPin _motorGpioPinA;
         private readonly GpioPin _motorGpioPinB;
+        private readonly PwmPin _motorPwmPin;
+
+        public Motor(PwmController pwmController, int pwmPin, int gpioPinIn1, int gpioPinIn2) : this(gpioPinIn1, gpioPinIn2)
+        {
+            if (LightningProvider.IsLightningEnabled)
+            {
+                _motorPwmPin = pwmController.OpenPin(pwmPin);
+                _motorPwmPin.SetActiveDutyCyclePercentage(.0);
+                _motorPwmPin.Start();
+            }
+        }
 
         public Motor(int gpioPinIn1, int gpioPinIn2)
         {
@@ -35,6 +49,14 @@ namespace Rover
         {
             _motorGpioPinA.Write(GpioPinValue.Low);
             _motorGpioPinB.Write(GpioPinValue.Low);
+        }
+
+        public void SpeedPercentage(double percent)
+        {
+            if(_motorPwmPin != null)
+            {
+                _motorPwmPin.SetActiveDutyCyclePercentage(percent);
+            }
         }
     }
 }

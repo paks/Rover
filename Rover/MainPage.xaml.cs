@@ -1,8 +1,11 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Threading.Tasks;
+using Windows.Devices;
 using Windows.UI.Core;
 using Windows.UI.Xaml.Controls;
+using Microsoft.IoT.Lightning.Providers;
+using Windows.Devices.Pwm;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
 
@@ -23,6 +26,13 @@ namespace Rover
         public MainPage()
         {
             InitializeComponent();
+            // Lightning Setup Guide: https://developer.microsoft.com/en-us/windows/iot/docs/LightningSetup.htm
+            // Great artical about PWM controler: http://www.codeproject.com/Articles/1095762/How-to-Fade-an-LED-with-PWM-in-Windows-IoT
+            // Another article: https://jeremylindsayni.wordpress.com/2016/05/08/a-servo-library-in-c-for-raspberry-pi-3-part-1-implementing-pwm/
+            if (LightningProvider.IsLightningEnabled) // no need to change the GPIO code
+            {
+                LowLevelDevicesController.DefaultProvider = LightningProvider.GetAggregateProvider();
+            }
 
             Loaded += MainPage_Loaded;
 
@@ -45,7 +55,20 @@ namespace Rover
 
         private async void DoWork(object sender, DoWorkEventArgs e)
         {
-            var driver = new TwoMotorsDriver(new Motor(27, 22), new Motor(5, 6));
+            TwoMotorsDriver driver;
+            if(LightningProvider.IsLightningEnabled)
+            {
+                // PWM Pins http://raspberrypi.stackexchange.com/questions/40812/raspberry-pi-2-b-gpio-pwm-and-interrupt-pins
+                var pwmControllers = await PwmController.GetControllersAsync(LightningPwmProvider.GetPwmProvider());
+                var pwmController = pwmControllers[1]; // use the on-device controller
+                pwmController.SetDesiredFrequency(50); // try to match 50Hz
+                driver = new TwoMotorsDriver(new Motor(pwmController, 18, 27, 22), new Motor(pwmController, 13, 5, 6));
+            }
+            else
+            {
+                driver = new TwoMotorsDriver(new Motor(27, 22), new Motor(5, 6));
+            }
+
             var ultrasonicDistanceSensor = new UltrasonicDistanceSensor(23, 24);
 
             await WriteLog("Moving forward");
@@ -66,6 +89,8 @@ namespace Rover
 
                 await WriteLog("Moving forward");
             }
+
+            driver.Stop();
         }
 
         private async Task WriteLog(string text)

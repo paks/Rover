@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using Microsoft.IoT.Lightning.Providers;
+using System;
 using System.Threading.Tasks;
 
 namespace Rover
@@ -19,24 +17,44 @@ namespace Rover
 
         public void Stop()
         {
+            if (LightningProvider.IsLightningEnabled)
+            {
+                _leftMotor.SpeedPercentage(.0);
+                _rightMotor.SpeedPercentage(.0);
+            }
             _leftMotor.Stop();
             _rightMotor.Stop();
         }
 
         public void MoveForward()
         {
+            if (LightningProvider.IsLightningEnabled)
+            {
+                _leftMotor.SpeedPercentage(.5);
+                _rightMotor.SpeedPercentage(.5);
+            }
             _leftMotor.MoveForward();
             _rightMotor.MoveForward();
         }
 
         public void MoveBackward()
         {
+            if (LightningProvider.IsLightningEnabled)
+            {
+                _leftMotor.SpeedPercentage(.5);
+                _rightMotor.SpeedPercentage(.5);
+            }
             _leftMotor.MoveBackward();
             _rightMotor.MoveBackward();
         }
 
         public async Task TurnRightAsync()
         {
+            if (LightningProvider.IsLightningEnabled)
+            {
+                _leftMotor.SpeedPercentage(.4);
+                _rightMotor.SpeedPercentage(.4);
+            }
             _leftMotor.MoveForward();
             _rightMotor.MoveBackward();
 
@@ -48,6 +66,11 @@ namespace Rover
 
         public async Task TurnLeftAsync()
         {
+            if (LightningProvider.IsLightningEnabled)
+            {
+                _leftMotor.SpeedPercentage(.4);
+                _rightMotor.SpeedPercentage(.4);
+            }
             _leftMotor.MoveBackward();
             _rightMotor.MoveForward();
 

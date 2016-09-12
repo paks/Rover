@@ -9,5 +9,6 @@
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <TextBlock x:Name="Log" TextWrapping="WrapWholeWords" MaxLines="10000000"></TextBlock>
+        
     </Grid>
 </Page>
